@@ -4,6 +4,7 @@
 # include <stack>
 # include <iterator>
 # include <algorithm>
+# include <string>
 
 class RPN{
 	private:

@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <map>
 #include <cerrno>
+#include <algorithm>
 
 class BTC{
 	private:
