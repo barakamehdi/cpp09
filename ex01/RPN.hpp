@@ -1,46 +1,17 @@
+#pragma once
 
-#ifndef RPN_HPP
-# define RPN_HPP
+# include <iostream> 
+# include <stack>
+# include <iterator>
+# include <algorithm>
 
-#include <map>
-#include <cfloat>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <stdlib.h>
-#include <algorithm>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-class	RPN
-{
+class RPN{
 	private:
-		std::stack<int> _number;
-
+		std::stack<int> _stack;
 	public:
-		RPN ();
-		RPN (RPN const &object);
-		RPN &operator=(RPN const &rhs);
+		RPN();
+		RPN(std::string input);
+		RPN(RPN const &copy);
+		RPN&	operator=(RPN const &copy);
 		~RPN();
-
-		int		calculate(int c, int c2, int flag);
-		void	exec(char *str);
 };
-
-class	Errorclass: public std::exception
-{
-	public:
-		const char *what() const throw();
-};
-
-enum	flag
-{
-	e_plus = '+',
-	e_minus = '-',
-	e_divide = '/',
-	e_multiply = '*'
-};
-
-#endif

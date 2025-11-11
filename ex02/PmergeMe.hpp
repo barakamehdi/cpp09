@@ -1,55 +1,17 @@
-#ifndef PMERGEME_HPP
-# define PMERGEME_HPP
+#pragma once
 
-#include <map>
+#include <iostream>
 #include <deque>
 #include <vector>
-#include <time.h>
-#include <cfloat>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <stdlib.h>
 #include <algorithm>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <ctime>
 
+template <typename T>
+void swap(T& container, int i){
+    int temp = container[i];
+    container[i] = container[i + 1];
+    container[i + 1] = temp;
+}
 
-class PmergeMe
-{
-	private:
-		std::vector<int>	_vector;
-		std::deque<int>		_deque;
-		std::vector<int>	_vectorCont;
-		std::deque<int>		_dequeCont;
-
-	public:
-		PmergeMe();
-		PmergeMe(char **argv);
-		PmergeMe(PmergeMe const &copy);
-		PmergeMe &operator=(PmergeMe const &rhs);
-		~PmergeMe(void);
-	
-		void	sortCont();
-		bool	vectorSort();
-		void	init(int size);
-		void	sortDeq();
-		void	printRes(clock_t stime, clock_t ftime);
-		void	printVector();
-		void	printDeq();
-		void	sortVector();
-
-
-		template <typename T>
-		T	tran_cont(T &container);
-		template <typename T>
-		void	arr_cont(T &container, T &temp);
-		template <typename T>
-		void	ret(T &container, T &temp, T &sequence);
-
-	
-};
-
-#endif
+void	sortvect(std::vector<int>& Container, int size);
+void	sortdeq(std::deque<int>& Container, int size);

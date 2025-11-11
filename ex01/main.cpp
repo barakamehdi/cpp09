@@ -1,22 +1,16 @@
-
-
 #include "RPN.hpp"
 
-int main(int argc, char **argv)
-{
-	if (argc == 2)
-	{
-		try
-		{
-			RPN rp;
-			rp.exec(argv[1]);
+int main(int ac, char **av){
+	if (ac != 2){
+		std::cout << "Error: bad arguments" << std::endl;
+		return 0;
+	}
+	else{
+		try{
+			RPN _rpn(av[1]);
 		}
-		catch (std::exception &e)
-		{
-			std::cout << e.what() << std::endl;
+		catch(const char *msg){
+			std::cout << msg << std::endl;
 		}
 	}
-	else
-		std::cerr << "Error" << std::endl;
-	return (0);
 }

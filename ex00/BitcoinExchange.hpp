@@ -1,50 +1,27 @@
-#ifndef BITCOINEXCHANGE_HPP
-# define BITCOINEXCHANGE_HPP
+#pragma once
 
-#include <map>
-#include <cfloat>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iomanip>
 #include <iostream>
-#include <stdlib.h>
-#include <algorithm>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <fstream>
+#include <ctime>
+#include <vector>
+#include <cstdlib>
+#include <map>
+#include <cerrno>
 
-class BitcoinExchange
-{
+class BTC{
 	private:
-		std::string _filename;
-		std::map<std::string, float> _values;
-
+		std::string								_date;
+		std::string								_value;
+		std::map<std::string, std::string>		_map;
 	public:
-		BitcoinExchange();
-		BitcoinExchange(std::string filename);
-		BitcoinExchange(BitcoinExchange const &obj);
-		BitcoinExchange& operator=(BitcoinExchange const &rhs);
-		~BitcoinExchange();
-
-		std::string getFilename(char *filename);
-		void		openfile();
-		bool		checkValue(std::string str);
-		bool		dateFormat(std::string year, std::string month, std::string date);
-		bool		checkDate(std::string str);
-		bool		checkLine(std::string str);
-		std::string	debug(std::string &date);
-		std::string	fileParse(std::string const filename);
-		void		calculate(std::string &rate);
-
-	class FileIssues: public std::exception
-	{
-		private:
-			std::string errorFault;
-		public:
-			FileIssues(std::string error);
-			const char *what() const throw() ;
-			virtual ~FileIssues() throw();
-	};
+		BTC();
+		BTC(const char* in_file);
+		BTC(BTC const &copy);
+		BTC&	operator=(BTC const &copy);
+		~BTC();
+		void	setVal(std::string Value);
+		void	setDate(std::string Date);
+		void	parseInput(std::string FileContent);
 };
 
-#endif
+bool	parseDate(int Year, int Month, int Day);

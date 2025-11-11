@@ -1,99 +1,66 @@
-
-
 #include "RPN.hpp"
 
-RPN::RPN()
-{
-	std::cout << "RPN Constructor Called" << std::endl;
+RPN::RPN(){}
+
+bool	is_op(char op){
+	return (op == '+' || op == '/' || op == '*' || op == '-');
 }
 
-RPN::RPN(RPN const &object)
-{
-	std::cout << "RPN Copy Constructor Called" << std::endl;
-	if (this != &object)
-	{
-		this->_number = object._number;
-	}
-}
-
-RPN &RPN::operator=(RPN const &rhs)
-{
-	std::cout << "RPN Copy Assignment == Operator" << std::endl;
-	if (this != &rhs)
-	{
-		this->_number = rhs._number;
-	}
-	return (*this);
-}
-
-RPN::~RPN()
-{
-	std::cout << "RPN Destructor called" << std::endl;
-}
-
-int	RPN::calculate(int c, int c2, int flag)
-{
-	switch (flag)
-	{
-		case e_plus:
-			return (c + c2);
-		case e_minus:
-			return (c - c2);
-		case e_multiply:
-			return (c * c2);
-		case e_divide:
-		{
-			if (c2 != 0)
-				return (c / c2);
-			else
-			{
-				std::cout << "A number can not be divided by zero" << std::endl;
-				return (0);
+RPN::RPN(std::string input){
+	int i = 0;
+	while (input[i] == ' ' || input[i] == '\t')
+		i++;
+	for(int i = 0; input[i]; i++){
+		if(input[i] == ' ')
+			i++;
+		if (isdigit(input[i]))
+			_stack.push(input[i] - '0');
+		else if (is_op(input[i])){
+			if (_stack.size() < 2)
+				throw "Error: you cant do operation with less than 2 nummbers";
+			int Firstnum = _stack.top();
+			_stack.pop();
+			switch (input[i]){
+				case '+':
+					_stack.top() += Firstnum;
+					break;
+				case '-':
+					_stack.top() -= Firstnum;
+					break;
+				case '/':
+					if (Firstnum == 0)
+						throw "Error div by 0 is impossible";
+					_stack.top() /= Firstnum;
+					break;
+				case '*':
+					_stack.top() *= Firstnum;
+					break;
+				default:
+					throw "Operation Error";
+					break;
 			}
 		}
+		else
+			throw "Error: bad input";
 	}
-	return (0);
+	if (_stack.size() != 1)
+		throw "Error: Stack not empty";
+	else
+		std::cout << _stack.top() << std::endl;
 }
 
-void	RPN::exec(char *str)
-{
-	std::string			n_str;
-	std::string			before;
-
-	n_str = str;
-	if (n_str.empty() || n_str.find_first_not_of("1234567890+-/* ") != std::string::npos)
-		throw (Errorclass());
-	std::stringstream	c_str;
-	c_str << str;
-	int			num2;
-	int			num1;
-	char		flag;
-	while (c_str >> n_str)
-	{
-		if (n_str.size() > 1)
-			throw (Errorclass());
-		before = n_str;
-		if (n_str.find_first_not_of("1234567890") == std::string::npos)
-			_number.push(atoi(n_str.c_str()));
-		if (n_str.find_first_of("+-/*") != std::string::npos && _number.size() < 2)
-			throw (Errorclass());
-		if (n_str.find_first_of("+-/*") != std::string::npos && _number.size() >= 2)
-		{
-			num2 = _number.top();
-			_number.pop();
-			num1 = _number.top();
-			_number.pop();
-			flag = (int)n_str[0];
-			_number.push(this->calculate(num1, num2, flag));
-		}
-	}
-	if (_number.size() >= 2 || _number.size() == 0
-		|| n_str.find_first_not_of("1234567890") == std::string::npos)
-		throw (Errorclass());
-	std::cout << _number.top() << std::endl;
+RPN::RPN(RPN const &copy){
+	*this = copy;
 }
 
-const char	*Errorclass::what() const throw()
-{
-	return ("Error");
+RPN&	RPN::operator=(RPN const &copy){
+	if (this != &copy){
+		_stack = copy._stack;
+	}
+	return *this;	
+}
+
+RPN::~RPN(){
+	for(size_t i = 0; i <= _stack.size(); i++)
+		_stack.pop();
 }

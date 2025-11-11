@@ -1,290 +1,94 @@
 #include "BitcoinExchange.hpp"
 
-BitcoinExchange::BitcoinExchange()
-{
-	std::cout << "BitcoinExchange Constructor Called" << std::endl;
+BTC::BTC(){
 }
 
-BitcoinExchange::BitcoinExchange(std::string  const filename): _filename(filename)
-{
-	std::cout << "Name Constructor Called" << std::endl;
+BTC::BTC(BTC const &copy){
+	*this = copy;
 }
 
-BitcoinExchange::BitcoinExchange(BitcoinExchange const &object)
-{
-	std::cout << "BitcoinExchange Copy Constructor Called" << std::endl;
-	*this = object;
+float	Calculate(std::string _value, std::string _second){
+	float _result = std::atof(_value.c_str()) * std::atof(_second.c_str());
+	if (_result < 0)
+		throw "Error: Not a Positive Number";
+	return _result;
 }
 
-BitcoinExchange &BitcoinExchange::operator=(BitcoinExchange const &rhs)
-{
-	std::cout << "BitcoinExchange Copy Assignment == Operator" << std::endl;
-	if (this != &rhs)
-	{}
-	return (*this);
-}
-
-BitcoinExchange::~BitcoinExchange()
-{
-	std::cout << "BitcoinExchange Destructor called" << std::endl;
-}
-
-BitcoinExchange::FileIssues::FileIssues(std::string error) : errorFault(error)
-{}
-
-const char* BitcoinExchange::FileIssues:: what(void) const throw()
-{
-	return (errorFault.c_str());
-}
-
-BitcoinExchange::FileIssues::~FileIssues() throw()
-{}
-
-std::string BitcoinExchange::getFilename(char* filename)
-{
-	std::string name = filename;
-	this->_filename = name;
-	return(this->_filename);
-}
-
-void BitcoinExchange::openfile()
-{
-	std::ifstream file("data.csv");
-	if(file.fail())
-		throw FileIssues("Cannot read the file");
-	std::string line;
-	getline(file, line);
-	std::string key, date;
-	while(getline(file,line))
-	{
-		std::stringstream ff(line);
-		getline(ff, date, ',');
-		getline(ff, key);
-		this->_values[date] = atof(key.c_str());
-	}
-	file.close();
-}
-
-bool BitcoinExchange::checkValue(std::string str)
-{
-	std::stringstream	stream(str);
-	std::string			value;
-	int					valueCount = 0;
-	char				*strpoint;
-
-	while (getline(stream, value, ' '))
-	{
-		if (value == ".")
-		{
-			std::cout << "Error: Cannot have only a '.' in the value" << std::endl;
-			return false;
+void print(std::map<std::string, std::string> &_map, std::string _date, std::string _value) {
+    std::map<std::string, std::string>::iterator it = _map.find(_date);
+		if (it != _map.end()){
+			float CalculatedVal = Calculate(_value, it->second);
+			std::cout << _date << " => " << _value << " = " << CalculatedVal << std::endl;
 		}
-		long number = strtol(value.c_str(), &strpoint, 10);
-		for (std::string::iterator it = value.begin(); it != value.end(); ++it)
-		{
-			if (!std::isdigit(*it) && *it != '.' && *it != '-' && *it != ' ')
-			{
-				std::cout << "Error: Invalid character '" << *it << std::endl;
-				return false;
-			}
-			if(std::count(value.begin(), value.end(), '.') > 2)
-			{
-				std::cout << "Error: Double decimal'" << *it << std::endl;
-				return false;
+		else{
+			it = _map.lower_bound(_date);
+			if (it == _map.begin())
+				return ;
+			else{
+				--it;
+				float CalculatedVal = Calculate(_value, it->second);
+				std::cout << _date << " => " << _value << " = " << CalculatedVal << std::endl;
 			}
 		}
-		if (number > 1000)
-		{ 
-			std::cout << "Error: Number too large => " << number <<  std::endl;
-			return false;
+}
+
+BTC::BTC(const char* in_file){
+	std::fstream Input(in_file);
+	std::fstream _db("data.csv");
+	if (!Input.is_open() || !_db.is_open())
+		throw "Error: Invalid file";
+	std::string	InputContent;
+	std::string	DataBase;
+	std::string key, value;
+	while(std::getline(_db, DataBase)){
+		key = DataBase.substr(0, 10);
+		value = DataBase.substr(11);
+		_map[key] = value;
+	}
+	std::getline(Input, InputContent);
+	if (InputContent != "date | value")
+		throw "Error: Input first line should start with (date | value)";
+	while(std::getline(Input, InputContent)){
+		try{
+			parseInput(InputContent);
+			print(_map, _date, _value);
 		}
-		else if (number < 0)
-		{ 
-			std::cout << "Error: Negative Number => " << number << std::endl;
-			return false;
-		}
-		valueCount++;
-		if (valueCount > 1)
-		{
-			std::cout << "Error: Multiple Values" << std::endl;
-			return false;
+		catch(const char *msg){
+			std::cout << msg << " => " << InputContent << std::endl;
 		}
 	}
+	Input.close();
+}
 
+BTC&	BTC::operator=(BTC const &copy){
+	if (this == &copy)
+		return *this;
+	_date = copy._date;
+	_value = copy._value;
+	_map = copy._map;
+	return *this;
+}
+
+BTC::~BTC(){
+}
+
+bool	parseDate(int Year, int Month, int Day){
+	if (Year < 2009 || Year > 2024)
+		return false;
+    if (Month < 1 || Month > 12) 
+    	return false; 
+    if (Day < 1 || Day > 31)
+    	return false;
+    if (Month == 2){
+			if (((Year % 4 == 0)
+				&& (Year % 100 != 0))
+				|| (Year % 400 == 0))
+        	return (Day <= 29); 
+        else
+        	return (Day <= 28); 
+    }
+	if (Month == 4 || Month == 6
+		|| Month == 9 || Month == 11)
+        return (Day <= 30);
 	return true;
-}
-
-bool BitcoinExchange::dateFormat(std::string year,std::string month, std::string date)
-{
-	for (std::string::iterator it = year.begin(); it != year.end(); ++it)
-	{
-		if (!std::isdigit(*it))
-		{
-			std::cout << "Error: Invalid character '" << *it << std::endl;
-			return (false);
-		}
-	}
-	for (std::string::iterator it = month.begin(); it != month.end(); ++it)
-	{
-		if (!std::isdigit(*it))
-		{
-			std::cout << "Error: Invalid character '" << *it << std::endl;
-			return (false);
-		}
-	}
-	for (std::string::iterator it = date.begin(); it != date.end(); ++it)
-	{
-		if (!std::isdigit(*it))
-		{
-			std::cout << "Error: Invalid character '" << *it << std::endl;
-			return (false);
-		}
-	}
-	return (true);
-}
-
-bool BitcoinExchange::checkDate(std::string str)
-{
-	std::stringstream stream(str);
-	std::string year, month, day;
-
-	getline(stream, year, '-');
-	getline(stream, month, '-');
-	getline(stream, day);
-	if(dateFormat(year, month, day))
-	{	
-		int i_year = atoi(year.c_str());
-		int i_month = atoi(month.c_str());
-		int i_day = atoi(day.c_str());
-		if((i_year % 4) == 0)
-		{
-			if ((day.size() > 3 || i_day < 1 || i_day > 31)
-				|| (i_month == 2 && i_day > 29)
-				|| (i_month < 1 || i_month > 12 || month.size() > 2)
-				|| (i_year < 2009 || i_year > 2022 || year.size() > 4))
-			{
-				std::cout << "Error: Incorrect date => " << year << '-' << month << '-' << day << std::endl;
-				return(false);
-			} 
-		}
-		else
-		{
-			if ((day.size() > 3 || i_day < 1 || i_day > 31)
-				|| (i_month == 2 && i_day > 28)
-				|| (i_month < 1 || i_month > 12 || month.size() > 2)
-				|| (i_year < 2009 || i_year > 2022 || year.size() > 4))
-			{
-				std::cout << "Error: Incorrect date => " << i_year << '-' << month << '-' << day << std::endl;
-				return(false);
-			}
-		}
-	}
-	return (dateFormat(year, month, day));
-}
-
-bool BitcoinExchange::checkLine(std::string str)
-{
-	std::stringstream stream(str);
-	std::string dates, value, pipe;
-	getline(stream, dates, ' ');
-	getline(stream, pipe, ' ');
-	getline(stream, value);
-	if(std::count(str.begin(), str.end(), '|') > 1 || value.empty())
-	{
-		std::cout << "Error: bad input => " << str << std::endl;
-		return (false);
-	}
-	return (true);
-}
-
-std::string BitcoinExchange::debug(std::string &date)
-{
-	std::stringstream stream(date);
-	std::string year, month, day, new_date;
-	getline(stream, year, '-');
-	int i_year = atoi(year.c_str());
-	getline(stream, month, '-');
-	int i_month = atoi(month.c_str());
-	getline(stream, day);
-	int i_day = atoi(day.c_str());
-	if(i_day > 1)
-		i_day--;
-	else if(i_month > 1)
-	{
-		i_day = 31;
-		i_month--;
-	}
-	else if(i_year > 2008)
-	{
-		i_day = 31;
-		i_month = 12;
-		i_year--;
-	}
-	std::stringstream copy_str;
-	copy_str  << i_year << '-' << std::setw(2) << std::setfill('0') << i_month << '-' << std::setw(2) << std::setfill('0') << i_day;
-	new_date = copy_str.str();
-	return (new_date);
-}
-
-std::string BitcoinExchange::fileParse(std::string const filename)
-{
-	if (filename.length() < 4)
-		throw FileIssues("Filename is less than 4 characters");
-	std::string checkFileName = filename.substr(filename.length() - 4, 4);
-	if(checkFileName != ".txt" && checkFileName != ".csv")
-		throw FileIssues("Filename does not cointain .txt/.csv");
-	std::ifstream ifs(filename.c_str());
-	if(!ifs)
-		throw FileIssues("File does not exsist");
-	std::ostringstream oss;
-	std::string line;
-	std::getline(ifs, line);
-	if(line.compare("date | value") != 0)
-	{
-		ifs.close();
-		throw FileIssues("Header not found [date | value]");
-	}
-	while(std::getline(ifs, line))
-		oss << line << '\n';
-	ifs.close();
-	return (oss.str()); 
-}
-
-void BitcoinExchange::calculate(std::string &data)
-{
-	std::stringstream ff(data);
-	std::string line;
-	while(getline(ff, line, '\n'))
-	{
-		std::stringstream lol(line);
-		std::string date, pipe, value;
-		getline(lol, date, ' ');
-		getline(lol, pipe, ' ');
-		getline(lol, value);
-		if(this->_values.end() == this->_values.find(date) )
-		{
-			if(this->checkValue(value) && this->checkDate(date) && this->checkLine(line))
-			{
-				bool flag = this->checkDate(date);	
-				while(this->_values.find(date) == this->_values.end() && flag)
-				{
-					flag = this->checkDate(date);
-					date = this->debug(date);
-				}
-				if(this->checkValue(value) && flag && this->checkLine(line))
-				{
-					std::cout << date  << " => " << atof(value.c_str()) << " = ";
-					std::cout << this->_values[date] * atof(value.c_str()) << '\n';
-				}
-			}
-		}
-		else
-		{
-			if(this->checkValue(value) && this->checkDate(date) && this->checkLine(line))
-			{
-				std::cout << date  << " => " << atof(value.c_str()) << " = ";
-				std::cout << this->_values[date] * atof(value.c_str()) << '\n';
-			}
-		}
-	}
 }
